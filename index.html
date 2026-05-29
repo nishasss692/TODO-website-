@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SleekTask // Firebase Tasks Dashboard</title>
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Link Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Confetti Particle Canvas -->
+  <canvas id="confetti-canvas" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 9999;"></canvas>
+
+  <!-- Shifting Aurora Glow Backgrounds -->
+  <div class="aurora-glow aurora-1"></div>
+  <div class="aurora-glow aurora-2"></div>
+
+  <!-- Firebase Status Banner -->
+  <div id="firebase-status-banner" class="status-banner local-mode">
+    <span class="status-indicator"></span>
+    <span id="status-banner-text">Loading connection...</span>
+  </div>
+
+  <!-- VIEW 1: AUTHENTICATION (Login / Sign Up) -->
+  <div id="auth-view" class="app-view">
+    <div class="auth-theme-toggle">
+      <button type="button" class="btn-icon" id="btn-toggle-theme-auth" title="Toggle Light/Dark Mode" aria-label="Toggle Light/Dark Mode">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" id="theme-icon-sun-auth" style="width: 18px; height: 18px;">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m0 13.5V21M4.93 4.93l1.56 1.56m10.92 10.92l1.56 1.56M3 12h2.25m13.5 0H21m-2.23-7.07l-1.56 1.56m-10.92 10.92l-1.56 1.56M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" />
+        </svg>
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" id="theme-icon-moon-auth" class="hidden" style="width: 18px; height: 18px;">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.72 9.72 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 0 0 9.002-5.998Z" />
+        </svg>
+      </button>
+    </div>
+    <div class="auth-container">
+      <div class="auth-card">
+        <div class="auth-header">
+          <div class="logo-icon"></div>
+          <h2 id="auth-title">Welcome to SleekTask</h2>
+          <p id="auth-subtitle">Sign in to sync your tasks across devices.</p>
+        </div>
+
+        <form id="auth-form" class="auth-form">
+          <div class="form-group">
+            <label for="auth-email">Email Address</label>
+            <input type="email" id="auth-email" placeholder="name@domain.com" required autocomplete="email">
+          </div>
+          
+          <div class="form-group">
+            <label for="auth-password">Password</label>
+            <div class="password-input-wrapper">
+              <input type="password" id="auth-password" placeholder="••••••••" required autocomplete="current-password">
+              <button type="button" id="btn-toggle-password" class="btn-toggle-password" aria-label="Toggle password visibility">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="eye-icon" id="eye-icon-visible" style="width: 18px; height: 18px;">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="eye-icon hidden" id="eye-icon-hidden" style="width: 18px; height: 18px;">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M21.008 12c-1.292 4.338-5.31 7.5-10.065 7.5-1.57 0-3.078-.344-4.436-.962m14.502-6.538a10.455 10.455 0 0 0-1.91-3.77m-1.245-1.245A9.747 9.747 0 0 0 12 4.5c-4.756 0-8.773 3.162-10.065 7.498a10.522 10.522 0 0 0 1.909 3.77m14.502-6.538L3.36 3.36m9.18 9.18a3 3 0 1 1-4.243-4.243m4.242 4.242L9.88 9.88" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="auth-error-message hidden" id="auth-error-box">
+            Invalid email or password.
+          </div>
+
+          <button type="submit" class="btn-primary-auth" id="btn-auth-submit">
+            Sign In
+          </button>
+        </form>
+
+        <div class="auth-footer">
+          <p id="auth-toggle-text">Don't have an account? <a href="#" id="auth-toggle-link">Create Account</a></p>
+          <div class="auth-divider">
+            <span>or</span>
+          </div>
+          <div class="auth-social-buttons">
+            <button class="btn-google-auth" id="btn-google-auth" type="button">
+              <svg class="google-icon" viewBox="0 0 24 24" width="16" height="16" xmlns="http://www.w3.org/2000/svg">
+                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/>
+                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"/>
+              </svg>
+              Continue with Google
+            </button>
+          </div>
+          <button class="btn-guest-auth" id="btn-guest-auth" type="button">
+            Continue as Guest (Demo Mode)
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VIEW 2: TASK DASHBOARD -->
+  <div id="dashboard-view" class="app-view hidden">
+    <div class="app-container">
+      <!-- Sidebar Navigation -->
+      <aside class="sidebar">
+        <div class="sidebar-brand">
+          <div class="logo-icon"></div>
+          <span class="brand-text">SleekTask</span>
+        </div>
+        
+        <nav class="sidebar-nav">
+          <button class="nav-item active" id="nav-tasks" data-filter="all">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="nav-icon">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+            </svg>
+            <span class="nav-label">My Tasks</span>
+            <span class="badge" id="badge-all">0</span>
+          </button>
+          
+          <button class="nav-item" id="nav-completed" data-filter="completed">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="nav-icon">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span class="nav-label">Completed</span>
+            <span class="badge" id="badge-completed">0</span>
+          </button>
+          
+          <!-- Category Filtering Menu -->
+          <div class="sidebar-menu-divider">Categories</div>
+          
+          <button class="nav-item category-item" data-tag-filter="Work">
+            <span class="category-dot tag-work"></span>
+            <span class="nav-label">Work</span>
+            <span class="badge" id="badge-work">0</span>
+          </button>
+
+          <button class="nav-item category-item" data-tag-filter="Design">
+            <span class="category-dot tag-design"></span>
+            <span class="nav-label">Design</span>
+            <span class="badge" id="badge-design">0</span>
+          </button>
+
+          <button class="nav-item category-item" data-tag-filter="Code">
+            <span class="category-dot tag-code"></span>
+            <span class="nav-label">Code</span>
+            <span class="badge" id="badge-code">0</span>
+          </button>
+
+          <button class="nav-item category-item" data-tag-filter="Personal">
+            <span class="category-dot tag-personal"></span>
+            <span class="nav-label">Personal</span>
+            <span class="badge" id="badge-personal">0</span>
+          </button>
+
+          <div class="sidebar-menu-divider">System</div>
+
+          <button class="nav-item" id="nav-settings" data-modal="settings">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="nav-icon">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.43l-1.003.828c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.43l1.004-.827c.292-.24.437-.613.43-.991a6.936 6.936 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+            </svg>
+            <span class="nav-label">Settings</span>
+          </button>
+        </nav>
+        
+        <div class="sidebar-footer">
+          <span class="footer-tag">SECURE v1.3.0</span>
+        </div>
+      </aside>
+
+      <!-- Main Workspace -->
+      <main class="main-content">
+        <!-- Top Navigation Bar -->
+        <header class="top-nav">
+          <div class="top-nav-left">
+            <div class="page-title-group">
+              <h1 id="page-heading">My Tasks</h1>
+              <span class="current-date" id="current-date">Wednesday, May 20</span>
+            </div>
+          </div>
+          
+          <div class="top-nav-right">
+            <button type="button" class="btn-icon" id="btn-toggle-theme" title="Toggle Light/Dark Mode" aria-label="Toggle Light/Dark Mode">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" id="theme-icon-sun" style="width: 18px; height: 18px;">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m0 13.5V21M4.93 4.93l1.56 1.56m10.92 10.92l1.56 1.56M3 12h2.25m13.5 0H21m-2.23-7.07l-1.56 1.56m-10.92 10.92l-1.56 1.56M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" />
+              </svg>
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" id="theme-icon-moon" class="hidden" style="width: 18px; height: 18px;">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.72 9.72 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 0 0 9.002-5.998Z" />
+              </svg>
+            </button>
+            <div class="user-profile">
+              <div class="avatar-container">
+                <div class="avatar" id="user-avatar">JD</div>
+                <span class="status-dot"></span>
+              </div>
+              <div class="user-meta">
+                <span class="username" id="user-name">Guest User</span>
+                <span class="user-role" id="user-role-label">Demo Session</span>
+              </div>
+            </div>
+            <button class="btn-signout" id="btn-signout">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="signout-icon">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
+              </svg>
+              Sign Out
+            </button>
+          </div>
+        </header>
+
+        <!-- Dashboard Viewport (Bento Grid Layout) -->
+        <section class="viewport">
+          <div class="dashboard-viewport-content bento-layout">
+            
+            <!-- Left Column: Main Task Board -->
+            <div class="bento-card board-card" id="board-card">
+              <!-- Card Header -->
+              <div class="board-header">
+                <div class="board-meta">
+                  <span class="task-count-label" id="task-count-text">3 Tasks remaining</span>
+                </div>
+                <div class="header-right-actions">
+                  <div class="sort-wrapper">
+                    <select id="sort-select" class="dropdown-control" title="Sort tasks">
+                      <option value="creation">🕒 Date Added</option>
+                      <option value="deadline">📅 Due Date</option>
+                      <option value="priority">🔥 Priority</option>
+                    </select>
+                  </div>
+                  <div class="search-wrapper">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="search-icon">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.602 10.602z" />
+                    </svg>
+                    <input type="text" id="search-input" placeholder="Search tasks..." autocomplete="off">
+                  </div>
+                  <button class="btn-clear" id="btn-clear-completed" title="Clear completed tasks">
+                    Clear Completed
+                  </button>
+                </div>
+              </div>
+
+              <!-- Upgraded Multiline Task Input Control (Moved to top of list) -->
+              <form class="add-task-form bento-input" id="add-task-form">
+                <div class="form-input-container">
+                  <div class="main-input-row">
+                    <input type="text" id="new-task-input" placeholder="What needs to be done?" required autocomplete="off">
+                  </div>
+                  <div class="meta-inputs-row">
+                    <div class="input-control-group">
+                      <label>Tag</label>
+                      <select id="task-tag-select" class="dropdown-control">
+                        <option value="Work">💼 Work</option>
+                        <option value="Design">🎨 Design</option>
+                        <option value="Code">💻 Code</option>
+                        <option value="Personal">🏠 Personal</option>
+                      </select>
+                    </div>
+                    <div class="input-control-group">
+                      <label>Priority</label>
+                      <select id="task-priority-select" class="dropdown-control">
+                        <option value="Low">🟢 Low</option>
+                        <option value="Medium" selected>🟡 Medium</option>
+                        <option value="High">🔴 High</option>
+                      </select>
+                    </div>
+                    <div class="input-control-group">
+                      <label>Due Date</label>
+                      <input type="date" id="task-date-input" class="date-picker-control">
+                    </div>
+                  </div>
+                </div>
+                
+                <button type="submit" class="fab-btn" aria-label="Add task" id="add-task-btn">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="plus-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                  </svg>
+                </button>
+              </form>
+
+              <!-- Dynamic Task List -->
+              <div class="task-list scrollable-list" id="task-list-container">
+                <!-- Rendered task items go here -->
+              </div>
+            </div>
+
+            <!-- Right Column: Stats & Metrics -->
+            <div class="bento-stats-column">
+              <!-- Stat Card 1: Completion -->
+              <div class="bento-card stat-card glow-card" id="stat-completion-card">
+                <div class="stat-info">
+                  <span class="stat-label">Progress</span>
+                  <span class="stat-value" id="stat-progress-val">0%</span>
+                  <span class="stat-subtext" id="stat-progress-sub">0 of 0 tasks done</span>
+                </div>
+                <div class="stat-visual">
+                  <svg class="progress-ring" width="56" height="56">
+                    <circle class="progress-ring-bg" stroke="var(--color-border)" stroke-width="4" fill="transparent" r="24" cx="28" cy="28"/>
+                    <circle class="progress-ring-fill" id="stat-progress-ring" stroke="var(--color-primary)" stroke-width="4" fill="transparent" r="24" cx="28" cy="28"/>
+                  </svg>
+                </div>
+              </div>
+
+              <!-- Stat Card 2: High Priority -->
+              <div class="bento-card stat-card">
+                <div class="stat-info">
+                  <span class="stat-label">High Priority</span>
+                  <span class="stat-value" id="stat-high-val">0</span>
+                  <span class="stat-subtext">Critical tasks remaining</span>
+                </div>
+                <div class="stat-visual-icon glow-red">🔴</div>
+              </div>
+
+              <!-- Stat Card 3: Deadlines -->
+              <div class="bento-card stat-card">
+                <div class="stat-info">
+                  <span class="stat-label">Upcoming</span>
+                  <span class="stat-value" id="stat-upcoming-val">0</span>
+                  <span class="stat-subtext">Due today or tomorrow</span>
+                </div>
+                <div class="stat-visual-icon glow-orange">⏳</div>
+              </div>
+              
+              <!-- Progress Bar (Moved to Stats column) -->
+              <div class="bento-card progress-bar-container">
+                <div class="progress-bar-label">
+                  <span>Overall Completion</span>
+                  <span id="progress-percent">0%</span>
+                </div>
+                <div class="progress-track">
+                  <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- Settings Modal (Glassmorphic design) -->
+  <div class="modal-overlay" id="settings-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>Dashboard Settings</h2>
+        <button class="modal-close" id="settings-close">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="close-icon">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <!-- Theme Accent Picker -->
+        <div class="setting-row">
+          <div class="setting-info">
+            <label class="setting-title">Accent Theme Color</label>
+            <span class="setting-desc">Choose a personal primary color</span>
+          </div>
+          <div class="theme-dots-container">
+            <button class="theme-dot dot-blue active" data-theme="blue" title="Classic Blue"></button>
+            <button class="theme-dot dot-purple" data-theme="purple" title="Royal Indigo"></button>
+            <button class="theme-dot dot-emerald" data-theme="emerald" title="Mint Emerald"></button>
+            <button class="theme-dot dot-orange" data-theme="orange" title="Sunset Amber"></button>
+          </div>
+        </div>
+        
+        <div class="setting-row">
+          <div class="setting-info">
+            <label class="setting-title">App Theme Mode</label>
+            <span class="setting-desc">Switch between Light and Dark mode</span>
+          </div>
+          <button class="btn-secondary" id="btn-toggle-theme-settings" type="button">Switch Mode</button>
+        </div>
+
+        <div class="setting-row">
+          <div class="setting-info">
+            <label class="setting-title">Tactile Audio Feedback</label>
+            <span class="setting-desc">Play satisfying audio pings on task actions</span>
+          </div>
+          <label class="switch-container">
+            <input type="checkbox" id="settings-audio-toggle" checked>
+            <span class="switch-slider"></span>
+          </label>
+        </div>
+
+        <div class="setting-row">
+          <div class="setting-info">
+            <label class="setting-title">Reset to Default Tasks</label>
+            <span class="setting-desc">Re-initialize default mockup tasks list</span>
+          </div>
+          <button class="btn-secondary" id="btn-reset-mockup">Reset</button>
+        </div>
+        
+        <div class="setting-row">
+          <div class="setting-info">
+            <label class="setting-title">Clear Storage</label>
+            <span class="setting-desc">Delete all tasks stored locally in the browser</span>
+          </div>
+          <button class="btn-danger" id="btn-clear-storage">Wipe Storage</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Link Client Logic as Module -->
+  <script type="module" src="app.js"></script>
+</body>
+</html>
