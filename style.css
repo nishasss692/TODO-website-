@@ -229,7 +229,9 @@ body {
 .auth-card {
   width: 100%;
   max-width: 440px;
-  background-color: var(--bg-sidebar);
+  background-color: var(--bg-card);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-card);
   padding: 44px 40px;
@@ -636,6 +638,133 @@ body {
   color: var(--color-primary);
 }
 
+@media (max-width: 640px) {
+  .app-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --- ADVANCED FEATURES STYLES --- */
+.pomodoro-card {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+}
+.pomodoro-controls {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  width: 100%;
+}
+.pomodoro-controls .btn-icon {
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  flex: 1;
+}
+.streak-card .stat-info {
+  align-items: center;
+  text-align: center;
+  width: 100%;
+}
+.heatmap-card {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.heatmap-header {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-main);
+  text-align: center;
+}
+.heatmap-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+
+.pomodoro-chart-container {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  height: 120px;
+  width: 100%;
+  margin-top: 16px;
+  padding: 0 10px;
+}
+.pomodoro-bar-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  height: 100%;
+  flex: 1;
+  gap: 8px;
+}
+.pomodoro-bar {
+  width: 20px;
+  background: var(--color-primary);
+  border-radius: 4px 4px 0 0;
+  min-height: 4px;
+  transition: height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 10px var(--color-primary-light);
+}
+.pomodoro-bar-label {
+  font-size: 10px;
+  color: var(--color-text-muted);
+}
+
+.task-row[draggable="true"] {
+  cursor: grab;
+}
+.task-row.drag-over {
+  border: 2px dashed var(--color-primary);
+  opacity: 0.6;
+}
+.drag-handle {
+  cursor: grab;
+  color: var(--color-text-very-muted);
+  margin-right: 12px;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+}
+.task-notes {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--color-text-muted);
+  background: rgba(255, 255, 255, 0.03);
+  padding: 10px;
+  border-radius: var(--radius-sm);
+  white-space: pre-wrap;
+  width: 100%;
+}
+.subtasks-list {
+  list-style: none;
+  margin-top: 8px;
+  padding-left: 28px;
+  font-size: 12px;
+  color: var(--color-text-muted);
+  width: 100%;
+}
+.subtasks-list li {
+  margin-bottom: 4px;
+}
+.btn-share {
+  background-color: transparent;
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  margin-left: auto;
+}
+
 .nav-icon {
   width: 20px;
   height: 20px;
@@ -801,12 +930,14 @@ body {
 
 /* Dashboard Viewport */
 .viewport {
+  position: relative;
   flex-grow: 1;
   display: flex;
   justify-content: center;
   align-items: flex-start;
   padding-top: 12px;
   padding-bottom: 80px;
+  overflow: visible;
 }
 
 /* Central Task Board Card (Frosted Glass and Border Spotlight Glow) */
@@ -1302,6 +1433,16 @@ body {
 .date-picker-control:hover {
   border-color: var(--color-border-hover);
   color: var(--color-text-main);
+}
+
+body:not(.light-mode) input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1) opacity(0.7);
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+body:not(.light-mode) input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  filter: invert(1) opacity(1);
 }
 
 /* Floating Action Button (Flat layout with gradient glow overlays) */
@@ -1929,3 +2070,671 @@ body.light-mode .theme-dot:not(.active)::after {
   background-color: #000000;
 }
 
+/* Toast Notifications */
+.toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  z-index: 10000;
+  pointer-events: none;
+}
+.toast {
+  background-color: var(--bg-card);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-main);
+  padding: 16px 24px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transform: translateX(120%);
+  opacity: 0;
+  transition: all var(--transition-spring);
+  pointer-events: auto;
+}
+.toast.show {
+  transform: translateX(0);
+  opacity: 1;
+}
+.toast.success { border-left: 4px solid var(--color-primary); }
+.toast.error { border-left: 4px solid #ef4444; }
+.toast.info { border-left: 4px solid #3b82f6; }
+
+/* Micro-animations */
+@keyframes slideInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.stagger-item {
+  animation: slideInUp 0.4s ease forwards;
+  opacity: 0;
+}
+
+/* Dynamic Layouts CSS */
+.layout-view {
+  opacity: 1;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  width: 100%;
+}
+.layout-view.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(12px) scale(0.99);
+  position: absolute;
+  top: 0;
+  left: 0;
+  visibility: hidden;
+}
+
+/* Focus Mode Layout */
+.focus-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 60vh;
+}
+.focus-pomodoro {
+  width: 100%;
+  max-width: 500px;
+  padding: 40px;
+  box-shadow: var(--shadow-hover);
+  border: 1px solid var(--color-primary);
+  background: var(--bg-sidebar);
+}
+
+/* Analytics Layout */
+.analytics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+/* --- Glassmorphism --- */
+.sidebar {
+  background-color: var(--bg-card) !important;
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  border-right: 1px solid var(--color-border) !important;
+}
+.top-nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--bg-card) !important;
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  padding: 20px 40px !important;
+  margin: 0 -40px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* --- Animated Strikethrough --- */
+.task-title {
+  position: relative;
+  display: inline-block;
+}
+.task-title::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 0;
+  height: 2px;
+  background: var(--color-text-muted);
+  transition: width 0.4s cubic-bezier(0.65, 0, 0.35, 1);
+}
+.task-row.checked .task-title::after {
+  width: 100%;
+}
+.task-row.checked .task-title {
+  color: var(--color-text-muted) !important;
+  text-decoration: none !important;
+}
+
+/* --- Spotlight Cursor --- */
+.spotlight {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 400px;
+  height: 400px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0) 70%);
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+  mix-blend-mode: screen;
+  transition: opacity 0.3s;
+  opacity: 0;
+}
+body:hover .spotlight {
+  opacity: 1;
+}
+
+/* --- 3D Tilt Hover --- */
+.tilt-card {
+  transition: transform 0.1s ease-out, box-shadow 0.1s ease-out;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+/* --- Fullscreen Button --- */
+.btn-fullscreen {
+  background: transparent;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+.btn-fullscreen:hover {
+  background: var(--bg-hover);
+  color: var(--color-text-main);
+}
+
+/* Gamification UI */
+.user-level-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+.level-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  background: var(--color-primary);
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 0 8px var(--color-primary-alpha);
+}
+.exp-bar {
+  flex-grow: 1;
+  height: 6px;
+  background-color: var(--color-surface);
+  border-radius: 3px;
+  overflow: hidden;
+  position: relative;
+  border: 1px solid var(--color-border);
+}
+.exp-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-primary), #a855f7);
+  border-radius: 3px;
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+
+/* Dynamic Background Aurora */
+.aurora-bg-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -2;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 1s ease;
+  background: var(--color-bg);
+}
+.aurora-bg-container.active {
+  opacity: 1;
+}
+.aurora-blob {
+  position: absolute;
+  filter: blur(100px);
+  border-radius: 50%;
+  animation: aurora-float 20s infinite ease-in-out alternate;
+  opacity: 0.15;
+}
+.aurora-blob-1 {
+  top: -10%; left: -10%;
+  width: 70vw; height: 70vw;
+  background: var(--color-primary);
+  animation-delay: 0s;
+}
+.aurora-blob-2 {
+  bottom: -20%; right: -10%;
+  width: 60vw; height: 60vw;
+  background: var(--color-secondary);
+  animation-delay: -5s;
+}
+.aurora-blob-3 {
+  top: 40%; left: 40%;
+  width: 50vw; height: 50vw;
+  background: var(--color-accent);
+  animation-delay: -10s;
+}
+@keyframes aurora-float {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(10vw, 5vh) scale(1.1); }
+  100% { transform: translate(-5vw, 15vh) scale(0.9); }
+}
+
+/* ==========================================================================
+   VISUAL ENHANCEMENTS — Premium feel upgrades
+   ========================================================================== */
+
+/* --- Animated Brand Logo Gradient --- */
+.brand-text {
+  background: linear-gradient(
+    135deg,
+    var(--color-primary) 0%,
+    #a855f7 50%,
+    var(--color-primary) 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradient-flow 5s linear infinite;
+}
+
+@keyframes gradient-flow {
+  0%   { background-position: 0% center; }
+  100% { background-position: 200% center; }
+}
+
+/* --- Logo Icon Pulse Ring --- */
+.logo-icon {
+  animation: logo-pulse 3s ease-in-out infinite;
+}
+@keyframes logo-pulse {
+  0%, 100% { box-shadow: 0 4px 14px rgba(59,130,246,0.4), 0 0 0 0 rgba(59,130,246,0.3); }
+  50%       { box-shadow: 0 4px 14px rgba(59,130,246,0.4), 0 0 0 8px rgba(59,130,246,0); }
+}
+
+/* --- Sidebar Active Item — glowing left bar --- */
+.nav-item.active {
+  position: relative;
+  background: linear-gradient(90deg, rgba(59,130,246,0.15) 0%, rgba(59,130,246,0.04) 100%);
+  box-shadow: inset 3px 0 0 var(--color-primary);
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+/* --- Nav item hover slide-in glow --- */
+.nav-item::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 0;
+  background: linear-gradient(90deg, rgba(59,130,246,0.18), transparent);
+  border-radius: var(--radius-md);
+  transition: width 0.25s ease;
+  pointer-events: none;
+}
+.nav-item:hover::before { width: 100%; }
+
+/* --- Task Row: Glowing hover effect --- */
+.task-row {
+  position: relative;
+  transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  border-radius: var(--radius-sm);
+}
+.task-row:hover {
+  background: rgba(59, 130, 246, 0.04);
+  transform: translateX(3px);
+  box-shadow: -3px 0 0 var(--color-primary), 0 4px 20px rgba(0,0,0,0.2);
+}
+.task-row.checked:hover {
+  box-shadow: -3px 0 0 #10b981;
+  background: rgba(16, 185, 129, 0.04);
+}
+
+/* --- Animated Checkbox Glow on Check --- */
+.task-row input[type="checkbox"] {
+  accent-color: var(--color-primary);
+}
+.checkmark {
+  transition: box-shadow 0.3s ease;
+}
+.task-row.checked .checkmark {
+  box-shadow: 0 0 8px rgba(16,185,129,0.6);
+}
+
+/* --- Board Card: Animated shimmer border --- */
+.board-card {
+  position: relative;
+  overflow: hidden;
+}
+.board-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    135deg,
+    rgba(59,130,246,0.5) 0%,
+    rgba(168,85,247,0.4) 40%,
+    rgba(16,185,129,0.3) 80%,
+    rgba(59,130,246,0.5) 100%
+  );
+  background-size: 300% 300%;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: destination-out;
+  mask-composite: exclude;
+  animation: shimmer-border 6s linear infinite;
+  pointer-events: none;
+}
+@keyframes shimmer-border {
+  0%   { background-position: 0% 50%; }
+  100% { background-position: 300% 50%; }
+}
+
+/* --- Stat cards: Glow on hover --- */
+.stat-card {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.stat-card:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.4), 0 0 0 1px rgba(59,130,246,0.2);
+}
+.stat-card .stat-value {
+  background: linear-gradient(135deg, var(--color-text-main), var(--color-primary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* --- Priority pills: Enhanced glow --- */
+.priority-high {
+  box-shadow: 0 0 8px rgba(239,68,68,0.5);
+}
+.priority-medium {
+  box-shadow: 0 0 8px rgba(234,179,8,0.4);
+}
+.priority-low {
+  box-shadow: 0 0 8px rgba(16,185,129,0.4);
+}
+
+/* --- FAB Add button: Pulsing ring on hover --- */
+.fab-btn {
+  position: relative;
+}
+.fab-btn::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid var(--color-primary);
+  opacity: 0;
+  transform: scale(0.9);
+  transition: all 0.3s ease;
+}
+.fab-btn:hover::after {
+  opacity: 0.5;
+  transform: scale(1.1);
+}
+
+/* --- Avatar: Animated gradient ring --- */
+.avatar-container {
+  position: relative;
+}
+.avatar-container::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  background: conic-gradient(
+    var(--color-primary) 0deg,
+    #a855f7 120deg,
+    #10b981 240deg,
+    var(--color-primary) 360deg
+  );
+  animation: spin-ring 4s linear infinite;
+  z-index: 0;
+}
+.avatar {
+  position: relative;
+  z-index: 1;
+}
+@keyframes spin-ring {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* --- Top Nav: Glassmorphism glow line --- */
+.top-nav::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-primary), rgba(168,85,247,0.6), transparent);
+  opacity: 0.5;
+}
+
+/* --- Bento card: Hover sheen sweep --- */
+.bento-card {
+  position: relative;
+  overflow: hidden;
+}
+.bento-card::after {
+  content: '';
+  position: absolute;
+  top: -50%; left: -75%;
+  width: 50%;
+  height: 200%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.04), transparent);
+  transform: skewX(-20deg);
+  transition: left 0.5s ease;
+  pointer-events: none;
+}
+.bento-card:hover::after {
+  left: 125%;
+}
+
+/* --- Search input: Focus glow expansion --- */
+#search-input:focus {
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.2), 0 0 20px rgba(59,130,246,0.1);
+  background: rgba(255,255,255,0.06);
+}
+
+/* --- Badge: Pop animation on update --- */
+@keyframes badge-pop {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.35); }
+  100% { transform: scale(1); }
+}
+.badge-updated {
+  animation: badge-pop 0.4s cubic-bezier(0.34,1.56,0.64,1);
+}
+
+/* --- Floating decorative orbs behind auth card --- */
+.auth-container::before,
+.auth-container::after {
+  content: '';
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: 0;
+}
+.auth-container::before {
+  width: 350px; height: 350px;
+  top: 10%; left: 10%;
+  background: radial-gradient(circle, rgba(59,130,246,0.25), transparent 70%);
+  animation: float-orb-1 10s ease-in-out infinite alternate;
+}
+.auth-container::after {
+  width: 300px; height: 300px;
+  bottom: 10%; right: 10%;
+  background: radial-gradient(circle, rgba(168,85,247,0.2), transparent 70%);
+  animation: float-orb-2 13s ease-in-out infinite alternate;
+}
+@keyframes float-orb-1 {
+  from { transform: translate(0, 0); }
+  to   { transform: translate(40px, 60px); }
+}
+@keyframes float-orb-2 {
+  from { transform: translate(0, 0); }
+  to   { transform: translate(-40px, -50px); }
+}
+.auth-card {
+  position: relative;
+  z-index: 1;
+}
+
+/* --- Sign-in button: Animated gradient fill --- */
+.btn-primary-auth {
+  background: linear-gradient(135deg, var(--color-primary), #a855f7);
+  background-size: 200% auto;
+  animation: gradient-flow 4s linear infinite;
+}
+.btn-primary-auth:hover {
+  background-size: 200% auto;
+  animation: gradient-flow 2s linear infinite;
+  box-shadow: 0 8px 25px rgba(59,130,246,0.45);
+}
+
+/* --- Focus Mode Pomodoro ring: outer glow --- */
+#pomodoro-progress-ring {
+  filter: drop-shadow(0 0 10px var(--color-primary)) drop-shadow(0 0 24px rgba(59,130,246,0.3));
+}
+
+/* --- Settings modal: Enhanced backdrop --- */
+.modal-card {
+  background: rgba(10,13,22,0.96);
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 30px 80px rgba(0,0,0,0.8), 0 0 0 1px rgba(59,130,246,0.1);
+}
+
+/* --- Clear Completed button: Hover warning glow --- */
+.btn-clear:hover {
+  background: rgba(239,68,68,0.08);
+  border-color: rgba(239,68,68,0.3);
+  color: #fca5a5;
+}
+
+/* --- Status dot: Live pulse when synced --- */
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10b981;
+  position: absolute;
+  bottom: 1px;
+  right: 1px;
+  border: 2px solid var(--bg-sidebar);
+  animation: pulse-dot 2s infinite;
+}
+
+/* --- heatmap box hover --- */
+.heatmap-grid > div {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  cursor: default;
+}
+.heatmap-grid > div:hover {
+  transform: scale(1.5);
+  box-shadow: 0 0 8px var(--color-primary);
+  z-index: 2;
+}
+
+/* --- Scrollable list: scroll styling --- */
+.scrollable-list {
+  max-height: 450px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.scrollable-list::-webkit-scrollbar {
+  width: 6px;
+}
+.scrollable-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollable-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-full);
+}
+.scrollable-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* --- Task input row: Focus glow --- */
+#new-task-input:focus {
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.2), 0 0 30px rgba(59,130,246,0.08);
+}
+
+/* --- Sidebar category dot: Pulse on active --- */
+.nav-item.active .category-dot {
+  animation: pulse-dot 1.5s infinite;
+  box-shadow: 0 0 6px currentColor;
+}
+
+/* --- Sign Out button: Hover red glow --- */
+.btn-signout:hover {
+  background: rgba(239,68,68,0.08);
+  border-color: rgba(239,68,68,0.25);
+  color: #fca5a5;
+}
+
+/* --- Pomodoro start button: Grow ring --- */
+#btn-pomodoro-start {
+  position: relative;
+}
+#btn-pomodoro-start::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 2px solid var(--color-primary);
+  opacity: 0;
+  transform: scale(0.85);
+  transition: all 0.4s ease;
+}
+#btn-pomodoro-start:hover::after {
+  opacity: 0.5;
+  transform: scale(1.05);
+}
+
+/* --- Task tag: Shimmer background --- */
+.task-tag {
+  position: relative;
+  overflow: hidden;
+}
+.task-tag::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 60%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+  transition: left 0.4s ease;
+}
+.task-tag:hover::after {
+  left: 150%;
+}
+
+/* --- Sort select: Subtle focus glow --- */
+#sort-select:focus {
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.2);
+  outline: none;
+}
+
+/* --- Category Distribution Card: Hover scale --- */
+.category-dist-row {
+  transition: transform 0.2s ease, background 0.2s ease;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  margin: 0 -12px;
+}
+.category-dist-row:hover {
+  transform: translateX(4px);
+  background: rgba(255, 255, 255, 0.03);
+}
