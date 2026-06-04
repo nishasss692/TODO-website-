@@ -68,7 +68,7 @@ function gainEXP(amount) {
   let newLevel = Math.floor(userEXP / 100) + 1;
   if (newLevel > userLevel) {
     userLevel = newLevel;
-    showNotification(`Level Up! You are now Level ${userLevel} 🎉`);
+    showNotification(`Level Up! You are now Level ${userLevel}`);
     localStorage.setItem('userLevel', userLevel);
   }
   localStorage.setItem('userEXP', userEXP);
@@ -105,7 +105,7 @@ function renderGamification() {
   const statLevelVal = document.getElementById('stat-level-val');
   
   if (statStreakVal) {
-    statStreakVal.textContent = `${streak} 🔥`;
+    statStreakVal.textContent = streak;
   }
   if (statLevelVal) {
     if (streak > 5) {
@@ -406,7 +406,6 @@ function transitionToDashboard() {
   
   renderGamification();
   subscribeToTasks();
-  initSpotlightGlow(); // Enable modern hover spotlight glow
 }
 
 // Task data synchronization
@@ -872,7 +871,7 @@ async function generateAISubtasks(taskId) {
   const btnAi = row.querySelector('.btn-ai-breakdown');
   if (btnAi) {
     btnAi.innerHTML = '⏳';
-    btnAi.style.animation = 'aurora-float 1s infinite alternate';
+    btnAi.style.animation = '';
   }
   showNotification("AI is analyzing your task...", "info");
   
@@ -892,7 +891,7 @@ async function generateAISubtasks(taskId) {
   
   saveLocalTasks();
   render();
-  showNotification("AI Breakdown complete! 🧠", "success");
+  showNotification("AI Breakdown complete!", "success");
 }
 
 function render() {
@@ -1041,9 +1040,8 @@ function render() {
   // Populate list
   filtered.forEach((task, index) => {
     const row = document.createElement('div');
-    row.className = `task-row stagger-item ${task.completed ? 'checked' : ''}`;
+    row.className = `task-row ${task.completed ? 'checked' : ''}`;
     row.id = `task-row-${task.id}`;
-    row.style.animationDelay = `${index * 0.05}s`;
     
     // Drag and Drop Logic
     row.draggable = true;
@@ -1173,11 +1171,11 @@ function render() {
         ${notesHTML}
         ${subtasksHTML}
       </div>
-      <div class="task-actions" style="display: flex; gap: 6px; align-self: flex-start; margin-top: 4px;">
-        <button class="btn-ai-breakdown" data-id="${task.id}" title="AI Auto-Breakdown 🧠" style="background: none; border: none; cursor: pointer; font-size: 16px; opacity: 0.6; transition: 0.2s;">🧠</button>
-        <button class="btn-invite" data-id="${task.id}" title="Share Task" style="background: none; border: none; cursor: pointer; font-size: 16px; opacity: 0.6; transition: 0.2s;">🔗</button>
-        <button class="btn-delete" data-id="${task.id}" title="Delete task" style="background: none; border: none; cursor: pointer; color: var(--color-error); opacity: 0.6; transition: 0.2s; width: 24px; height: 24px; padding: 0;">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor">
+      <div class="task-actions">
+        <button class="btn-task-action btn-ai-breakdown" data-id="${task.id}" title="AI Auto-Breakdown">AI Auto Breakdown</button>
+        <button class="btn-task-action btn-invite" data-id="${task.id}" title="Share Task">Share</button>
+        <button class="btn-delete" data-id="${task.id}" title="Delete task">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="trash-icon">
             <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
           </svg>
         </button>
@@ -1219,13 +1217,6 @@ function render() {
     });
 
     row.querySelector('input[type="checkbox"]').addEventListener('change', (e) => {
-      const isChecked = e.target.checked;
-      if (isChecked) {
-        const rect = e.target.getBoundingClientRect();
-        const x = rect.left + rect.width / 2;
-        const y = rect.top + rect.height / 2;
-        addConfetti(x, y);
-      }
       toggleTaskCompletion(task.id);
     });
     row.querySelector('.btn-delete').addEventListener('click', () => deleteTask(task.id));
@@ -1680,75 +1671,7 @@ let audioCtx = null;
 let isAudioEnabled = true;
 
 
-// Confetti Particle Canvas Engine
-const canvas = document.getElementById('confetti-canvas');
-let ctx = null;
-if (canvas) {
-  ctx = canvas.getContext('2d');
-  window.addEventListener('resize', resizeCanvas);
-  resizeCanvas();
-}
-
-function resizeCanvas() {
-  if (canvas) {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-  }
-}
-
-let particles = [];
-function addConfetti(x, y) {
-  if (!canvas || !ctx) return;
-  const colors = ['#3b82f6', '#a855f7', '#10b981', '#f97316', '#ec4899', '#eab308'];
-  for (let i = 0; i < 40; i++) {
-    particles.push({
-      x: x,
-      y: y,
-      vx: (Math.random() - 0.5) * 8,
-      vy: (Math.random() - 0.7) * 12 - 3,
-      radius: Math.random() * 4 + 3,
-      color: colors[Math.floor(Math.random() * colors.length)],
-      alpha: 1,
-      decay: Math.random() * 0.02 + 0.015,
-      gravity: 0.35,
-      tilt: Math.random() * 10
-    });
-  }
-  if (particles.length === 40) {
-    requestAnimationFrame(updateConfetti);
-  }
-}
-
-function updateConfetti() {
-  if (!canvas || !ctx || particles.length === 0) return;
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  
-  for (let i = particles.length - 1; i >= 0; i--) {
-    const p = particles[i];
-    p.vy += p.gravity;
-    p.x += p.vx;
-    p.y += p.vy;
-    p.alpha -= p.decay;
-    p.tilt += 0.1;
-    
-    if (p.alpha <= 0 || p.x < 0 || p.x > canvas.width || p.y > canvas.height) {
-      particles.splice(i, 1);
-      continue;
-    }
-    
-    ctx.save();
-    ctx.globalAlpha = p.alpha;
-    ctx.fillStyle = p.color;
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
-  }
-  
-  if (particles.length > 0) {
-    requestAnimationFrame(updateConfetti);
-  }
-}
+// (Confetti engine removed)
 
 function loadAudioPreference() {
   const saved = localStorage.getItem('sleektask_audio');
@@ -1988,7 +1911,7 @@ function renderPomodoroChart() {
           if (!isNaN(sessionDate.getTime())) {
             const day = getLocalDateString(sessionDate);
             if (dailyTotals[day] !== undefined) {
-              const duration = parseInt(session.duration) || 0;
+              const duration = parseInt(session.duration, 10) || 0;
               // Convert seconds to minutes if duration is large, else treat as minutes
               const mins = duration > 120 ? Math.round(duration / 60) : duration;
               dailyTotals[day] += mins;
@@ -2007,12 +1930,15 @@ function renderPomodoroChart() {
     const mins = dailyTotals[day];
     const heightPercent = Math.max(5, (mins / maxMins) * 100);
     const parts = day.split('-');
-    const dateObj = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+    const dateObj = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
     const dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][dateObj.getDay()];
     
     chartContainer.innerHTML += `
       <div class="pomodoro-bar-wrapper">
-        <div class="pomodoro-bar" style="height: ${heightPercent}%;" title="${mins} mins"></div>
+        <div class="pomodoro-bar-container-inner">
+          ${mins > 0 ? `<span class="pomodoro-bar-value" style="bottom: calc(${heightPercent}% + 4px);">${mins}m</span>` : ''}
+          <div class="pomodoro-bar" style="height: ${heightPercent}%;" title="${mins} mins"></div>
+        </div>
         <span class="pomodoro-bar-label">${dayName}</span>
       </div>
     `;
@@ -2143,19 +2069,7 @@ if (document.readyState === 'loading') {
 } else {
   boot();
 }
-// ==========================================
-// NEW UI ENHANCEMENTS (Spotlight, Tilt, Fullscreen)
-// ==========================================
-
-// 1. Interactive Spotlight Cursor
-const spotlight = document.getElementById('cursor-spotlight');
-if (spotlight) {
-  document.addEventListener('mousemove', (e) => {
-    spotlight.style.transform = `translate(${e.clientX - 200}px, ${e.clientY - 200}px)`;
-  });
-}
-
-// 2. Fullscreen Toggle
+// Fullscreen Toggle
 const btnFullscreen = document.getElementById('btn-fullscreen');
 if (btnFullscreen) {
   btnFullscreen.addEventListener('click', () => {
@@ -2168,31 +2082,3 @@ if (btnFullscreen) {
     }
   });
 }
-
-// 3. 3D Tilt Effect for Bento Cards
-function applyTiltEffect() {
-  const cards = document.querySelectorAll('.bento-card, .stat-card');
-  cards.forEach(card => {
-    card.classList.add('tilt-card');
-    card.addEventListener('mousemove', (e) => {
-      const rect = card.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      
-      const centerX = rect.width / 2;
-      const centerY = rect.height / 2;
-      
-      const rotateX = ((y - centerY) / centerY) * -5; // max 5 deg
-      const rotateY = ((x - centerX) / centerX) * 5;  // max 5 deg
-      
-      card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
-    });
-    
-    card.addEventListener('mouseleave', () => {
-      card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) scale3d(1, 1, 1)';
-    });
-  });
-}
-
-// Apply tilt after a short delay to ensure elements are rendered
-setTimeout(applyTiltEffect, 500);

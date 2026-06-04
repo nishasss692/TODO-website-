@@ -1,0 +1,5 @@
+node_modules/
+scratch/
+.gemini/
+*.pyc
+__pycache__/

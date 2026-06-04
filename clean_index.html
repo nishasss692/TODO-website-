@@ -9,13 +9,16 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <!-- Link Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=17">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <!-- Toast Notification Container -->
   <div id="toast-container" class="toast-container"></div>
 
-  <!-- Ambient Static Background Glows -->
+  <!-- Confetti Particle Canvas -->
+  <canvas id="confetti-canvas" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 9999;"></canvas>
+
+  <!-- Shifting Aurora Glow Backgrounds -->
   <div class="aurora-glow aurora-1"></div>
   <div class="aurora-glow aurora-2"></div>
 
@@ -146,9 +149,30 @@
 
           <!-- Category Filtering Menu -->
           <div class="sidebar-menu-divider">Categories</div>
-          <div id="sidebar-categories-container" style="display: flex; flex-direction: column; gap: 4px;">
-            <!-- Categories dynamically populated from customTags -->
-          </div>
+          
+          <button class="nav-item category-item" data-tag-filter="Work">
+            <span class="category-dot tag-work"></span>
+            <span class="nav-label">Work</span>
+            <span class="badge" id="badge-work">0</span>
+          </button>
+
+          <button class="nav-item category-item" data-tag-filter="Design">
+            <span class="category-dot tag-design"></span>
+            <span class="nav-label">Design</span>
+            <span class="badge" id="badge-design">0</span>
+          </button>
+
+          <button class="nav-item category-item" data-tag-filter="Code">
+            <span class="category-dot tag-code"></span>
+            <span class="nav-label">Code</span>
+            <span class="badge" id="badge-code">0</span>
+          </button>
+
+          <button class="nav-item category-item" data-tag-filter="Personal">
+            <span class="category-dot tag-personal"></span>
+            <span class="nav-label">Personal</span>
+            <span class="badge" id="badge-personal">0</span>
+          </button>
 
           <div class="sidebar-menu-divider">System</div>
 
@@ -224,9 +248,9 @@
                 <div class="header-right-actions">
                   <div class="sort-wrapper">
                     <select id="sort-select" class="dropdown-control" title="Sort tasks">
-                      <option value="creation">Date Added</option>
-                      <option value="deadline">Due Date</option>
-                      <option value="priority">Priority</option>
+                      <option value="creation">🕒 Date Added</option>
+                      <option value="deadline">📅 Due Date</option>
+                      <option value="priority">🔥 Priority</option>
                     </select>
                   </div>
                   <div class="search-wrapper">
@@ -251,15 +275,18 @@
                     <div class="input-control-group">
                       <label>Tag</label>
                       <select id="task-tag-select" class="dropdown-control">
-                        <!-- Options populated by JS -->
+                        <option value="Work">💼 Work</option>
+                        <option value="Design">🎨 Design</option>
+                        <option value="Code">💻 Code</option>
+                        <option value="Personal">🏠 Personal</option>
                       </select>
                     </div>
                     <div class="input-control-group">
                       <label>Priority</label>
                       <select id="task-priority-select" class="dropdown-control">
-                        <option value="Low">Low</option>
-                        <option value="Medium" selected>Medium</option>
-                        <option value="High">High</option>
+                        <option value="Low">🟢 Low</option>
+                        <option value="Medium" selected>🟡 Medium</option>
+                        <option value="High">🔴 High</option>
                       </select>
                     </div>
                     <div class="input-control-group">
@@ -284,7 +311,6 @@
           </div>
 
           <!-- LAYOUT 2: FOCUS MODE (POMODORO) -->
-          <div id="layout-focus" class="layout-view hidden layout-container-focus">
             <div class="focus-container">
               <div class="bento-card stat-card pomodoro-card focus-pomodoro" style="padding: 60px 40px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 500px; max-width: 600px; margin: 0 auto; box-shadow: 0 20px 50px rgba(0,0,0,0.3); border-radius: 32px; background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(24px);">
                 
@@ -326,7 +352,7 @@
               <!-- Stat Card 1: Completion -->
               <div class="bento-card stat-card glow-card" id="stat-completion-card">
                 <div class="stat-info">
-                  <span class="stat-label">Progress 📈</span>
+                  <span class="stat-label">Progress</span>
                   <span class="stat-value" id="stat-progress-val">0%</span>
                   <span class="stat-subtext" id="stat-progress-sub">0 of 0 tasks done</span>
                 </div>
@@ -341,58 +367,40 @@
               <!-- Stat Card 2: Streaks & Levels -->
               <div class="bento-card stat-card streak-card">
                 <div class="stat-info" style="align-items: center;">
-                  <span class="stat-label">Current Streak 🔥</span>
-                  <span class="stat-value" id="stat-streak-val">0</span>
+                  <span class="stat-label">Current Streak</span>
+                  <span class="stat-value" id="stat-streak-val">0 🔥</span>
                   <span class="stat-subtext" id="stat-level-val">Level 1 Novice</span>
                 </div>
               </div>
 
               <!-- Stat Card 3: High Priority -->
-              <div class="bento-card stat-card" id="stat-high-card">
+              <div class="bento-card stat-card">
                 <div class="stat-info">
-                  <span class="stat-label">High Priority 🔴</span>
+                  <span class="stat-label">High Priority</span>
                   <span class="stat-value" id="stat-high-val">0</span>
                   <span class="stat-subtext">Critical tasks remaining</span>
                 </div>
-                <div class="stat-visual-icon glow-red" style="display: flex; align-items: center; justify-content: center; color: var(--color-error); opacity: 0.85;">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 24px; height: 24px;">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
-                  </svg>
-                </div>
+                <div class="stat-visual-icon glow-red">🔴</div>
               </div>
 
               <!-- Stat Card 4: Deadlines -->
-              <div class="bento-card stat-card" id="stat-upcoming-card">
+              <div class="bento-card stat-card">
                 <div class="stat-info">
-                  <span class="stat-label">Upcoming ⏳</span>
+                  <span class="stat-label">Upcoming</span>
                   <span class="stat-value" id="stat-upcoming-val">0</span>
                   <span class="stat-subtext">Due today or tomorrow</span>
                 </div>
-                <div class="stat-visual-icon glow-orange" style="display: flex; align-items: center; justify-content: center; color: var(--color-accent); opacity: 0.85;">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 24px; height: 24px;">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
+                <div class="stat-visual-icon glow-orange">⏳</div>
               </div>
               
               <!-- Stat Card 5: Activity Heatmap -->
               <div class="bento-card heatmap-card" style="grid-column: 1 / -1;">
-                <div class="heatmap-header">Activity Heatmap 📅</div>
+                <div class="heatmap-header">Activity Heatmap</div>
                 <div class="heatmap-grid" id="heatmap-grid"></div>
               </div>
               
-              <!-- Stat Card 6: Category Distribution -->
-              <div class="bento-card chart-card" id="stat-distribution-card" style="grid-column: 1 / -1;">
-                <div class="heatmap-header">Tasks by Category 🏷️</div>
-                <div class="category-bars-container" id="category-distribution-container" style="display: flex; flex-direction: column; gap: 14px; padding: 6px 0;">
-                  <!-- Bars dynamically generated by JS -->
-                </div>
-              </div>
-
-
             </div>
           </div>
-        </section>
       </main>
     </div>
   </div>
@@ -441,21 +449,6 @@
           </label>
         </div>
 
-        <div class="setting-row" style="flex-direction: column; align-items: stretch; gap: 12px;">
-          <div class="setting-info" style="margin-bottom: 8px;">
-            <label class="setting-title">Tag Manager</label>
-            <span class="setting-desc">Create custom tags for your tasks</span>
-          </div>
-          <div id="settings-tags-list" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px;">
-            <!-- Tags rendered by JS -->
-          </div>
-          <form id="add-tag-form" style="display: flex; gap: 8px;">
-            <input type="text" id="new-tag-name" class="dropdown-control" placeholder="Tag name" style="flex: 1;" required>
-            <input type="color" id="new-tag-color" value="#3b82f6" style="width: 40px; height: 38px; padding: 0; border: none; border-radius: 8px; cursor: pointer; background: transparent;">
-            <button type="submit" class="btn-secondary">Add</button>
-          </form>
-        </div>
-
         <div class="setting-row">
           <div class="setting-info">
             <label class="setting-title">Custom Background URL</label>
@@ -464,7 +457,13 @@
           <input type="text" id="settings-bg-url" class="dropdown-control" placeholder="https://images.unsplash.com/...">
         </div>
 
-
+        <div class="setting-row">
+          <div class="setting-info">
+            <label class="setting-title">Reset to Default Tasks</label>
+            <span class="setting-desc">Re-initialize default mockup tasks list</span>
+          </div>
+          <button class="btn-secondary" id="btn-reset-mockup">Reset</button>
+        </div>
         
         <div class="setting-row">
           <div class="setting-info">
@@ -476,9 +475,11 @@
       </div>
     </div>
   </div>
+          <!-- LAYOUT 2: FOCUS MODE (POMODORO) -->
+  <!-- Spotlight Cursor -->
+  <div class="spotlight" id="cursor-spotlight"></div>
 
-
-  <!-- Link Client Logic -->
-  <script src="app.js?v=17"></script>
+  <!-- Link Client Logic as Module -->
+  <script type="module" src="app.js"></script>
 </body>
 </html>
